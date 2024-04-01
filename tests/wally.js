@@ -32,7 +32,7 @@ exports.reporter = async (page, options) => {
                     do {
                         await delay(30000);
                         getRes = await getReport(JSON.parse(resultData));
-                    } while (getRes.payload.status !== 'completed' || getRes.payload.status !== "reviewed" || getRes.payload.status !== "failed" || getRes.payload.status !== "review-pending");
+                    } while (getRes.payload.status !== 'completed' || getRes.payload.status !== "paused" || getRes.payload.status !== "failed");
                     resolve(getRes);
                 } catch (err) {
                     data.prevented = true;
