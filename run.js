@@ -65,6 +65,7 @@ const tools = {
   qualWeb: 'QualWeb',
   testaro: 'Testaro',
   wave: 'WAVE',
+  wally: 'WALLY'
 };
 // Strings in log messages indicating errors.
 const errorWords = [

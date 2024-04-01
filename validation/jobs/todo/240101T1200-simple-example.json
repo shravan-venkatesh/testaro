@@ -7,16 +7,15 @@
     {
       "type": "launch",
       "which": "chromium",
-      "url": "https://example.edu/",
+      "url": "https://evernote.com",
       "what": "Chromium browser"
     },
     {
       "type": "test",
-      "which": "testaro",
-      "withItems": false,
-      "stopOnFail": true,
+      "which": "wally",
+      "what": "tests for wally",
       "rules": [
-        "y",
+        "n",
         "bulk"
       ]
     }

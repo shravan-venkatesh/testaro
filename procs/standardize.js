@@ -194,6 +194,46 @@ const doAxe = (result, standardResult, certainty) => {
     });
   }
 };
+
+const doWally = (result, standardResult, severity) => {
+  result.payload.top_six_critical_issues.forEach(issue => {
+    const { category, severity, rule, no_of_instances } = issue;
+    const instance = {
+      ruleID: rule,
+      what: category,
+      ordinalSeverity: ['Needs Attention', '', '', 'Failure'].indexOf(severity),
+      tagName: '',
+      id: '', 
+      location: {
+        doc: 'dom',
+        type: '',
+        spec: ''
+      },
+      excerpt: `Number of instances: ${no_of_instances}`
+    };
+    standardResult.instances.push(instance);
+  });
+  
+  result.payload.rules_summary.forEach(ruleSummary => {
+    const { rule, category, affected_documents } = ruleSummary;
+    const instance = {
+      ruleID: rule,
+      what: category,
+      ordinalSeverity: 1, 
+      tagName: '', 
+      id: '', 
+      location: {
+        doc: 'dom',
+        type: '',
+        spec: ''
+      },
+      excerpt: `Affected documents: ${affected_documents}`
+    };
+    standardResult.instances.push(instance);
+    console.log("in standardization ", standardResult);
+  });
+  
+}
 // Converts issue instances at an htmlcs severity level.
 const doHTMLCS = (result, standardResult, severity) => {
   if (result[severity]) {
@@ -527,6 +567,11 @@ const convert = (toolName, data, result, standardResult) => {
   else if (toolName === 'htmlcs' && result) {
     doHTMLCS(result, standardResult, 'Warning');
     doHTMLCS(result, standardResult, 'Error');
+  }
+  //wally
+  else if(toolName === 'wally' && result) {
+    doWally(result, standardResult, "Needs Attention");
+    // doWally(result, standardResult, "Failure");
   }
   // ibm
   else if (toolName === 'ibm' && result.totals) {
