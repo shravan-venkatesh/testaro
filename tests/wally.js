@@ -30,9 +30,10 @@ exports.reporter = async (page, options) => {
                 try {
                     let getRes
                     do {
-                        await delay(30000);
                         getRes = await getReport(JSON.parse(resultData));
-                    } while (getRes.payload.status !== 'completed' || getRes.payload.status !== "paused" || getRes.payload.status !== "failed");
+                        console.log(getRes)
+                        await delay(30000);
+                    } while (getRes.payload.status === 'in-progress' || getRes.payload.status === 'open' || getRes.payload.status === "pages_analysed");
                     resolve(getRes);
                 } catch (err) {
                     data.prevented = true;
