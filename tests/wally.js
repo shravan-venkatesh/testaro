@@ -1,14 +1,13 @@
 const https = require('https');
-const { hostname } = require('os');
 
 exports.reporter = async (page, options) => {
     const {report, rules} = options;
     let data = {};
     let result = {};
-    const hostName = process.env.NODE_ENV === 'production' ? 'https://api.wallyax.com' :'wally-stg1-api.wallyax.com';
+    const hostName = process.env.NODE_ENV === 'production' ? process.env.WALLY_PROD_URL : process.env.WALLY_DEV_URL;
     const postResult = await new Promise((resolve, reject) => {
         const postData = JSON.stringify({
-            email: "shravan2406@gmail.com",
+            email: "testaro@wallyax.com",
             url: page.url(),
         });
 
