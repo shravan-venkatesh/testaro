@@ -7,7 +7,7 @@
     {
       "type": "launch",
       "which": "chromium",
-      "url": "https://evernote.com",
+      "url": "https://www.w3.org",
       "what": "Chromium browser"
     },
     {

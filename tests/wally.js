@@ -1,10 +1,10 @@
 const https = require('https');
 
+const hostName = process.env.NODE_ENV === 'production' ? process.env.WALLY_PROD_URL : process.env.WALLY_DEV_URL;
 exports.reporter = async (page, options) => {
     const {report, rules} = options;
     let data = {};
     let result = {};
-    const hostName = process.env.NODE_ENV === 'production' ? process.env.WALLY_PROD_URL : process.env.WALLY_DEV_URL;
     const postResult = await new Promise((resolve, reject) => {
         const postData = JSON.stringify({
             email: "testaro@wallyax.com",
@@ -37,7 +37,7 @@ exports.reporter = async (page, options) => {
                     resolve(getRes);
                 } catch (err) {
                     data.prevented = true;
-                    data.error = `ERROR executing Wally for page, ${error.message}`;
+                    data.error = `ERROR executing Wally for page, ${err.message}`;
                     console.log("ERROR in get:", err);
                     return resolve({
                         resultData
@@ -62,7 +62,6 @@ exports.reporter = async (page, options) => {
     });
 
     result = postResult;
-    console.log("Wally generated report ", postResult);
     
     return {
         data, 
@@ -73,7 +72,7 @@ exports.reporter = async (page, options) => {
 const getReport = async (data) => {
     return new Promise((resolve, reject) => {
         https.get({
-            hostname: hostname,
+            hostname: hostName,
             path: `/audit/summary/public/${data.payload.audit_id}`,
             protocol: "https:"
         }, response => {
