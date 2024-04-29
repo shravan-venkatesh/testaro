@@ -196,28 +196,11 @@ const doAxe = (result, standardResult, certainty) => {
 };
 
 const doWally = (result, standardResult, severity) => {
-  result.payload.top_six_critical_issues.forEach(issue => {
-    const { category, severity, rule, no_of_instances } = issue;
-    const instance = {
-      ruleID: rule,
-      what: category,
-      ordinalSeverity: ['Needs Attention', '', '', 'Failure'].indexOf(severity),
-      tagName: '',
-      id: '', 
-      location: {
-        doc: 'dom',
-        type: '',
-        spec: ''
-      },
-      excerpt: `Number of instances: ${no_of_instances}`
-    };
-    standardResult.instances.push(instance);
-  });
   
   result.payload.accessorData.forEach(accessorData => {
-    const { rule_id, rule_text, type, element_source,element_id, selector } = accessorData;
+    const { rule_name, rule_text, type, element_source,element_id, selector } = accessorData;
     const instance = {
-      ruleID: rule_id,
+      ruleID: rule_name,
       what: rule_text,
       ordinalSeverity: 1, 
       // tagName: element_source, 
