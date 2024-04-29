@@ -202,7 +202,7 @@ const doWally = (result, standardResult, severity) => {
     const instance = {
       ruleID: rule_name,
       what: rule_text,
-      ordinalSeverity: 1, 
+      ordinalSeverity: ["","minor","moderate","severe"].indexOf(type), 
       // tagName: element_source, 
       id: element_id, 
       location: {
