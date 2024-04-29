@@ -1,11 +1,12 @@
 const https = require('https');
-
+const DELAY=1200000;
 const hostName = process.env.NODE_ENV === 'production' ? process.env.WALLY_PROD_URL : process.env.WALLY_DEV_URL;
 exports.reporter = async (page, options) => {
     const {report, rules} = options;
     let data = {};
     let result = {};
     const postResult = await new Promise((resolve, reject) => {
+        let resultData = "";
         const postData = JSON.stringify({
             email: "testaro@wallyax.com",
             url: page.url(),
@@ -13,7 +14,7 @@ exports.reporter = async (page, options) => {
 
         const postOptions = {
             hostname: hostName,
-            path: `/public/start-audit?apiKey=${process.env.WALLY_KEY ? process.env.WALLY_KEY : ''}`,
+            path: `/wallyax/start-audit/1.3?apikey=${process.env.WALLY_KEY ? process.env.WALLY_KEY : ''}`,
             method: "POST",
             protocol: "https:",
             headers: {
@@ -23,16 +24,17 @@ exports.reporter = async (page, options) => {
         }
 
         const postReq = https.request(postOptions, res => {
-            let resultData = "";
             res.on('data', (chunk) => {
                 resultData += chunk;
             });
             res.on('end', async () => {
                 try {
                     let getRes
+                    console.log(resultData);
                     do {
                         getRes = await getReport(JSON.parse(resultData));
-                        await delay(30000);
+                        console.log(getRes);
+                        await delay(DELAY/2);
                     } while (getRes.payload.status === 'in-progress' || getRes.payload.status === 'open' || getRes.payload.status === "pages_analysed");
                     resolve(getRes);
                 } catch (err) {
@@ -73,7 +75,7 @@ const getReport = async (data) => {
     return new Promise((resolve, reject) => {
         https.get({
             hostname: hostName,
-            path: `/audit/summary/public/${data.payload.audit_id}`,
+            path: `/wallyax/get-audit-detail/1.1/${data.payload.audit_id}?apikey=${process.env.WALLY_KEY ? process.env.WALLY_KEY : ''}`,
             protocol: "https:"
         }, response => {
             let actReport = '';

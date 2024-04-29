@@ -215,19 +215,19 @@ const doWally = (result, standardResult, severity) => {
   });
   
   result.payload.rules_summary.forEach(ruleSummary => {
-    const { rule, category, affected_documents } = ruleSummary;
+    const { rule_id, rule_text, type, element_source,element_id, selector } = ruleSummary;
     const instance = {
-      ruleID: rule,
-      what: category,
+      ruleID: rule_id,
+      what: rule_text,
       ordinalSeverity: 1, 
-      tagName: '', 
-      id: '', 
+      // tagName: element_source, 
+      id: element_id, 
       location: {
         doc: 'dom',
-        type: '',
-        spec: ''
+        type: 'selector',
+        spec: selector
       },
-      excerpt: `Affected documents: ${affected_documents}`
+      excerpt: `${element_source}`
     };
     standardResult.instances.push(instance);
     console.log("in standardization ", standardResult);
