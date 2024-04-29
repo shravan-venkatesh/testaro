@@ -1,5 +1,4 @@
 const https = require('https');
-const DELAY=1200000;
 const hostName = process.env.NODE_ENV === 'production' ? process.env.WALLY_PROD_URL : process.env.WALLY_DEV_URL;
 exports.reporter = async (page, options) => {
     const {report, rules} = options;
@@ -30,11 +29,10 @@ exports.reporter = async (page, options) => {
             res.on('end', async () => {
                 try {
                     let getRes
-                    console.log(resultData);
                     do {
                         getRes = await getReport(JSON.parse(resultData));
                         console.log(getRes);
-                        await delay(DELAY/2);
+                        await delay(30000);
                     } while (getRes.payload.status === 'in-progress' || getRes.payload.status === 'open' || getRes.payload.status === "pages_analysed");
                     resolve(getRes);
                 } catch (err) {

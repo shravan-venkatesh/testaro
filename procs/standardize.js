@@ -214,8 +214,8 @@ const doWally = (result, standardResult, severity) => {
     standardResult.instances.push(instance);
   });
   
-  result.payload.rules_summary.forEach(ruleSummary => {
-    const { rule_id, rule_text, type, element_source,element_id, selector } = ruleSummary;
+  result.payload.accessorData.forEach(accessorData => {
+    const { rule_id, rule_text, type, element_source,element_id, selector } = accessorData;
     const instance = {
       ruleID: rule_id,
       what: rule_text,
