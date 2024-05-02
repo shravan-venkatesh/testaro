@@ -589,6 +589,14 @@ The `nuVal` tool performs the tests of the Nu Html Checker.
 
 Its `rules` argument is **not** an array of rule IDs, but instead is an array of rule _specifications_. A rule specification for `nuVal` is a string with the format `=ruleID` or `~ruleID`. The `=` prefix indicates that the rule ID is invariable. The `~` prefix indicates that the rule ID is variable, in which case the `ruleID` part of the specification is a matching regular expression, rather than the exact text of a message. This `rules` format arises from the fact that `nuVal` generates customized messages and does not accompany them with rule identifiers.
 
+##### Wally
+
+The `Wally` tool performs the tests of the Wally tool.
+
+If a `Wally` test act is included in the job, an environment variable named `WALLY_KEY` must exist, with your WALLY API key as its value. You can get it from sending a mail to [technology@wallyax.com](mailto:technology@wallyax.com). an environment variable named `WALLY_URL` must also be included with the value as `gateway.wallyax.com`.
+
+The `Wally` API does not accept a transmitted document for testing. WAVE must be given only a URL, which it then visits to perform its tests. Therefore, you cannot manipulate a page and then have WAVE test it, or ask WAVE to test a page that cannot be reached directly with a URL.
+
 ##### QualWeb
 
 The `qualWeb` tool performs the ACT rules, WCAG Techniques, and best-practices tests of QualWeb. Only failures and warnings are included in the report. The EARL report of QualWeb is not generated, because it is equivalent to the report of the ACT rules tests.

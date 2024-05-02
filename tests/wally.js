@@ -1,5 +1,5 @@
 const https = require('https');
-const hostName = process.env.NODE_ENV === 'production' ? process.env.WALLY_PROD_URL : process.env.WALLY_DEV_URL;
+const hostName = process.env.NODE_ENV === 'production' ? process.env.WALLY_URL : process.env.WALLY_URL;
 exports.reporter = async (page, options) => {
     const {report, rules} = options;
     let data = {};
