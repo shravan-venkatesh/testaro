@@ -596,7 +596,6 @@ The `Wally` tool performs the tests of the Wally tool.
 If a `Wally` test act is included in the job, an environment variable named `WALLY_KEY` must exist, with your WALLY API key as its value. You can get it from sending a mail to [technology@wallyax.com](mailto:technology@wallyax.com). an environment variable named `WALLY_URL` must also be included with the value as `gateway.wallyax.com`.
 
 
-
 ##### QualWeb
 
 The `qualWeb` tool performs the ACT rules, WCAG Techniques, and best-practices tests of QualWeb. Only failures and warnings are included in the report. The EARL report of QualWeb is not generated, because it is equivalent to the report of the ACT rules tests.
