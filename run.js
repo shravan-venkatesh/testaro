@@ -33,6 +33,8 @@ require('dotenv').config();
 const {actSpecs} = require('./actSpecs');
 // Module to standardize report formats.
 const {standardize} = require('./procs/standardize');
+// Module to identify element bounding boxes.
+const {identify} = require('./procs/identify');
 // Module to send a notice to an observer.
 const {tellServer} = require('./procs/tellServer');
 
@@ -1119,6 +1121,16 @@ const doActs = async (report, actIndex, page) => {
               };
               // Populate it.
               standardize(act);
+              // Add a box ID and a path ID to each of its standard instances if missing.
+              for (const instance of act.standardResult.instances) {
+                const elementID = await identify(instance, page);
+                if (! instance.boxID) {
+                  instance.boxID = elementID ? elementID.boxID : '';
+                }
+                if (! instance.pathID) {
+                  instance.pathID = elementID ? elementID.pathID : '';
+                }
+              };
               // If the original-format result is not to be included in the report:
               if (standard === 'only') {
                 // Remove it.
