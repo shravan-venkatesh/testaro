@@ -48,6 +48,7 @@ const tools = exports.tools = {
   qualWeb: 'QualWeb',
   testaro: 'Testaro',
   wave: 'WAVE',
+  wally:"WALLY"
 };
 
 // FUNCTIONS

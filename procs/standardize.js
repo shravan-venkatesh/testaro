@@ -210,7 +210,7 @@ const doWally = (result, standardResult, severity) => {
       ruleID: rule_name,
       what: rule_text,
       ordinalSeverity: ["","minor","moderate","severe"].indexOf(type), 
-      // tagName: element_source, 
+      tagName: selector.split('>')[selector.split('>').length - 1], 
       id: element_id, 
       location: {
         doc: 'dom',

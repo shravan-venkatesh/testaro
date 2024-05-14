@@ -32,5 +32,6 @@
       "which": "wally",
       "what": "Wally"
     }
-  ]
+  ],
+  "sendReportTo": ""
 }

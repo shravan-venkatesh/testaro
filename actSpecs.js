@@ -208,6 +208,6 @@ exports.actSpecs = {
       {
         reportType: [true, 'number', '', 'WAVE report type (1, 2, 3, or 4)']
       }
-    ]
+    ],
   }
 };
