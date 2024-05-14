@@ -210,6 +210,7 @@ const doWally = (result, standardResult, severity) => {
         type: 'selector',
         spec: selector
       },
+      pathID: selector,
       excerpt: `${element_source}`
     };
     standardResult.instances.push(instance);

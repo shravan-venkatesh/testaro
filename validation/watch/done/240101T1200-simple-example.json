@@ -13,11 +13,7 @@
     {
       "type": "test",
       "which": "wally",
-      "what": "tests for wally",
-      "rules": [
-        "n",
-        "bulk"
-      ]
+      "what": "tests for wally"
     }
   ],
   "sources": {},
