@@ -40,6 +40,8 @@ const cap = rawString => {
     return '';
   }
 };
+// Returns whether an id attribute value is valid without character escaping.
+const isBadID = id => /[^-\w]|^\d|^--|^-\d/.test(id);
 // Returns the tag name and the value of an id attribute from a substring of HTML code.
 const getIdentifiers = code => {
   let tagName = '';
@@ -47,7 +49,7 @@ const getIdentifiers = code => {
   // If the substring includes the start tag of an element:
   if (code && typeof code === 'string' && code.length && /<\s*[a-zA-Z]/.test(code)) {
     // Get the first start tag in the substring.
-    const startTag = code.replace(/^.*?<(?=[a-zA-Z])/s, '').replace(/>.*$/s, '').trim();
+    const startTag = code.replace(/^.*?<(?=[a-zA-Z])/s, '').replace(/[^a-zA-Z].*$/gs, '').trim();
     // If it exists:
     if (startTag && startTag.length) {
       // Get its tag name, upper-cased.
@@ -56,6 +58,11 @@ const getIdentifiers = code => {
       const idArray = startTag.match(/\sid="([^"<>]+)"/);
       if (idArray && idArray.length === 2) {
         id = idArray[1];
+      }
+      // If the id value is invalid without character escaping:
+      if (isBadID(id)) {
+        // Remove it.
+        id = '';
       }
     }
   }
@@ -231,7 +238,7 @@ const doHTMLCS = (result, standardResult, severity) => {
             what,
             ordinalSeverity: ['Warning', '', '', 'Error'].indexOf(severity),
             tagName: tagName.toUpperCase(),
-            id: id.slice(1),
+            id: isBadID(id.slice(1)) ? '' : id.slice(1),
             location: {
               doc: 'dom',
               type: '',
@@ -341,7 +348,7 @@ const doWAVE = (result, standardResult, categoryName) => {
           if (finalTerm.includes('#')) {
             const finalArray = finalTerm.split('#');
             tagName = finalArray[0].replace(/:.*/, '');
-            id = finalArray[1];
+            id = isBadID(finalArray[1]) ? '' : finalArray[1];
           }
           else {
             tagName = finalTerm.replace(/:.*/, '');
@@ -474,14 +481,16 @@ const convert = (toolName, data, result, standardResult) => {
               if (! tagName && finalRuleID.endsWith('_svg')) {
                 tagName = 'SVG';
               }
-              const excerpt = ruleResult.element && ruleResult.element.html || '';
+              const excerpt = ruleResult.element && ruleResult.element.html.replace(/\s+/g, ' ')
+              || '';
               if (! tagName && /^<[a-z]+[ >]/.test(excerpt)) {
-                tagName = excerpt.slice(1).replace(/[ >]+/, '').toUpperCase();
+                tagName = excerpt.slice(1).replace(/[ >].+/, '').toUpperCase();
               }
               const idDraft = excerpt && excerpt.replace(/^[^[>]+id="/, 'id=').replace(/".*$/, '');
-              const id = idDraft && idDraft.length > 3 && idDraft.startsWith('id=')
+              const idFinal = idDraft && idDraft.length > 3 && idDraft.startsWith('id=')
                 ? idDraft.slice(3)
                 : '';
+              const id = idFinal === '' || isBadID(idFinal) ? '' : idFinal;
               const instance = {
                 ruleID: finalRuleID,
                 what,
@@ -537,7 +546,7 @@ const convert = (toolName, data, result, standardResult) => {
           what,
           ordinalSeverity: 0,
           tagName,
-          id,
+          id: isBadID(id) ? '' : id,
           location: {
             doc: 'dom',
             type: 'box',
@@ -596,7 +605,6 @@ const convert = (toolName, data, result, standardResult) => {
     if (result.rawPage) {
       doNuVal(result, standardResult, 'rawPage');
     }
-    const {instances} = standardResult;
   }
   // qualWeb
   else if (
