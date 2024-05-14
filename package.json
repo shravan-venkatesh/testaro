@@ -1,6 +1,6 @@
 {
   "name": "testaro",
-  "version": "38.0.1",
+  "version": "39.0.3",
   "description": "Run 1000 web accessibility tests from 10 tools and get a standardized report",
   "main": "index.js",
   "scripts": {
@@ -37,7 +37,8 @@
     "axe-playwright": "*",
     "dotenv": "*",
     "pixelmatch": "*",
-    "playwright": "*"
+    "playwright": "*",
+    "playwright-dompath": "*"
   },
   "devDependencies": {
     "eslint": "*"

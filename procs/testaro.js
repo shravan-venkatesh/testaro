@@ -31,6 +31,10 @@
 const {getSample} = require('../procs/sample');
 // Module to get locator data.
 const {getLocatorData} = require('../procs/getLocatorData');
+// Module to get element IDs.
+const {boxOf, boxToString} = require('./identify');
+// Module to get the XPath of an element.
+const {xPath} = require('playwright-dompath');
 
 // ########## FUNCTIONS
 
@@ -80,6 +84,9 @@ const report = exports.report = async (withItems, all, ruleID, whats, ordinalSev
     totals[ordinalSeverity] += data.populationRatio;
     // If itemization is required:
     if (withItems) {
+      // Get the bounding box of the element.
+      const {location} = elData;
+      const box = location.type === 'box' ? location.spec : await boxOf(loc);
       // Add a standard instance to the result.
       standardInstances.push({
         ruleID,
@@ -88,7 +95,9 @@ const report = exports.report = async (withItems, all, ruleID, whats, ordinalSev
         tagName: elData.tagName,
         id: elData.id,
         location: elData.location,
-        excerpt: elData.excerpt
+        excerpt: elData.excerpt,
+        boxID: boxToString(box),
+        pathID: await xPath(loc)
       });
     }
   }
@@ -107,7 +116,9 @@ const report = exports.report = async (withItems, all, ruleID, whats, ordinalSev
         type: '',
         spec: ''
       },
-      excerpt: ''
+      excerpt: '',
+      boxID: '',
+      pathID: ''
     });
   }
   // Return the result.

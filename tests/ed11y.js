@@ -29,6 +29,8 @@
 
 // Module to handle files.
 const fs = require('fs/promises');
+// Module to get the XPath of an element.
+const {xPath} = require('playwright-dompath');
 
 // FUNCTIONS
 
@@ -38,21 +40,30 @@ exports.reporter = async (page, options) => {
   const {act, report} = options;
   const {jobData} = report;
   const scriptNonce = jobData && jobData.lastScriptNonce;
-  // Get the test script.
+  // Get the tool script.
   const script = await fs.readFile(`${__dirname}/../ed11y/editoria11y.min.js`, 'utf8');
-  const rawResultJSON = await page.evaluate(args => new Promise(async resolve => {
-    // Impose a timeout on obtaining a result.
+  // Run the tests and get the violating elements and violation facts.
+  const reportJSHandle = await page.evaluateHandle(args => new Promise(async resolve => {
+    // If the report is incomplete after 20 seconds:
     const timer = setTimeout(() => {
-      resolve(JSON.stringify({
-        prevented: true,
-        error: 'ed11y timed out'
-      }));
+      // Return this as the report.
+      resolve({
+        facts: {
+          prevented: true,
+          error: 'ed11y timed out'
+        }
+      });
     }, 20000);
     const {scriptNonce, script, rulesToTest} = args;
-    // When the script is executed:
+    // When the script has been executed, creating data in an Ed11y object:
     document.addEventListener('ed11yResults', () => {
-      // Get the result.
-      const resultObj = {};
+      // Initialize a report containing violating elements and violation facts.
+      const report = {
+        elements: [],
+        facts:  {}
+      };
+      const {elements, facts} = report;
+      // Populate the global facts.
       [
         'version',
         'options',
@@ -64,42 +75,45 @@ exports.reporter = async (page, options) => {
       ]
       .forEach(key => {
         try {
-          resultObj[key] = Ed11y[key];
+          facts[key] = Ed11y[key];
         }
         catch(error) {
           console.log(`ERROR: invalid value of ${key} property of Ed11y (${error.message})`);
         }
       });
-      // Get data on the text alternatives of images from the result.
-      resultObj.imageAlts = Ed11y
+      // Get data on violating text alternatives of images from Ed11y.
+      facts.imageAlts = Ed11y
       .imageAlts
       .filter(item => item[3] !== 'pass')
       .map(item => item.slice(1));
-      // Delete useless properties from the result.
-      delete resultObj.options.sleekTheme;
-      delete resultObj.options.darkTheme;
-      delete resultObj.options.lightTheme;
-      // Initialize the element results.
-      const results = resultObj.results = [];
-      // For each rule violation:
-      Ed11y.results.forEach(elResult => {
-        // If rules were not selected or they were and include this one:
-        if (! rulesToTest || rulesToTest.includes(elResult.test)) {
-          // Create a violation record.
-          const result = {};
-          result.test = elResult.test || '';
-          if (elResult.content) {
-            result.content = elResult.content.replace(/\s+/g, ' ');
+      // Delete useless facts.
+      delete facts.options.sleekTheme;
+      delete facts.options.darkTheme;
+      delete facts.options.lightTheme;
+      // Initialize the violation facts.
+      facts.violations = [];
+      // For each rule violation by an element:
+      Ed11y.results.forEach(violation => {
+        // If rules were not selected or they were and include the violated rule:
+        if (! rulesToTest || rulesToTest.includes(violation.test)) {
+          const violationFacts = {};
+          violationFacts.test = violation.test || '';
+          // If the element is in the page:
+          if (violation.content) {
+            violationFacts.content = violation.content.replace(/\s+/g, ' ');
           }
-          if (elResult.element) {
-            const{element} = elResult;
-            result.tagName = element.tagName || '';
-            result.id = element.id || '';
-            result.loc = {};
+          const {element} = violation;
+          if (element.outerHTML) {
+            // Add the element to the report.
+            elements.push(element);
+            // Add its violation facts to the report.
+            violationFacts.tagName = element.tagName || '';
+            violationFacts.id = element.id || '';
+            violationFacts.loc = {};
             const locRect = element.getBoundingClientRect();
             if (locRect) {
               ['x', 'y', 'width', 'height'].forEach(dim => {
-                result.loc[dim] = Math.round(locRect[dim]);
+                violationFacts.loc[dim] = Math.round(locRect[dim], 0);
               });
             }
             let elText = element.textContent.replace(/\s+/g, ' ').trim();
@@ -109,59 +123,65 @@ exports.reporter = async (page, options) => {
             if (elText.length > 400) {
               elText = `${elText.slice(0, 200)}…${elText.slice(-200)}`;
             }
-            result.excerpt = elText.replace(/\s+/g, ' ');
+            violationFacts.excerpt = elText.replace(/\s+/g, ' ');
+            violationFacts.boxID = ['x', 'y', 'width', 'height']
+            .map(dim => violationFacts.loc[dim])
+            .join(':');
+            facts.violations.push(violationFacts);
           }
-          // Add it to the result.
-          results.push(result);
         }
       });
-      // Return the result.
-      try {
-        const resultJSON = JSON.stringify(resultObj);
-        clearTimeout(timer);
-        resolve(resultJSON);
-      }
-      catch(error) {
-        clearTimeout(timer);
-        resolve(JSON.stringify({
-          prevented: true,
-          error: `Result object not stringified (${error.message})`
-        }));
-      }
+      // Return the report.
+      clearTimeout(timer);
+      resolve(report);
     });
-    // Add the test script to the page.
-    const testScript = document.createElement('script');
+    // Add the tool script to the page.
+    const toolScript = document.createElement('script');
     if (scriptNonce) {
-      testScript.nonce = scriptNonce;
-      console.log(`Added nonce ${scriptNonce} to script`);
+      toolScript.nonce = scriptNonce;
+      console.log(`Added nonce ${scriptNonce} to tool script`);
     }
-    testScript.textContent = script;
-    document.body.insertAdjacentElement('beforeend', testScript);
-    // Run the script.
+    toolScript.textContent = script;
+    document.body.insertAdjacentElement('beforeend', toolScript);
+    // Execute the tool script, creating Ed11y and triggering the event listener.
     try {
       await new Ed11y({
         alertMode: 'headless'
       });
     }
     catch(error) {
-      resolve(JSON.stringify({
-        prevented: true,
-        error: error.message
-      }));
+      resolve({
+        facts: {
+          prevented: true,
+          error: error.message
+        }
+      });
     };
   }), {scriptNonce, script, rulesToTest: act.rules});
-  const result = JSON.parse(rawResultJSON);
-  let data = {};
-  if (result.prevented) {
-    data.success = false;
-    data.prevented = true;
-    data.error = result.error;
-    delete result.prevented;
-    delete result.error;
+  // Add the violation facts to the result.
+  const factsJSHandle = await reportJSHandle.getProperty('facts');
+  const facts = await factsJSHandle.jsonValue();
+  const result = facts;
+  // If there were any violations:
+  const {violations} = facts;
+  if (violations && violations.length) {
+    // Get the violating elements.
+    const elementsJSHandle = await reportJSHandle.getProperty('elements');
+    const elementJSHandles = await elementsJSHandle.getProperties();
+    // For each violation:
+    for (const index in violations) {
+      // Get its path ID.
+      const elementHandle = elementJSHandles.get(index).asElement();
+      const pathID = await xPath(elementHandle);
+      // Add it to the violation facts.
+      violations[index].pathID = pathID;
+    };
   }
-  // Return the act report.
+  // Return the report.
   return {
-    data,
+    data: {
+      prevented: facts.prevented
+    },
     result
   };
 };
